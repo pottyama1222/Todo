@@ -268,19 +268,30 @@
     let tasks = [];
     let currentFilter = 'all';
     let isDark = false;
-
+  
+    function saveTasks() {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+  
+    function loadTasks() {
+      const saved = localStorage.getItem('tasks');
+      if (saved) {
+        tasks = JSON.parse(saved);
+      }
+    }
+  
     function toggleInput() {
       const popup = document.getElementById('inputPopup');
       popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
     }
-
+  
     function toggleTheme() {
       isDark = !isDark;
       document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
       document.getElementById('themeIcon').src = isDark ? '太陽.png' : '月.png';
       document.getElementById('headerBg').src = isDark ? 'okumono-biru3.png' : 'okumono-biru3.png';
     }
-
+  
     function addTask() {
       const task = {
         id: Date.now(),
@@ -292,10 +303,11 @@
         completed: false
       };
       tasks.push(task);
+      saveTasks();
       renderTasks();
       document.getElementById('inputPopup').style.display = 'none';
     }
-
+  
     function renderTasks() {
       const list = document.getElementById('taskList');
       list.innerHTML = '';
@@ -317,33 +329,39 @@
         list.appendChild(div);
       });
     }
-
+  
     function toggleComplete(id) {
       const task = tasks.find(t => t.id === id);
       if (task) {
         task.completed = !task.completed;
+        saveTasks();
         renderTasks();
       }
     }
-
+  
     function deleteTask(id) {
       tasks = tasks.filter(t => t.id !== id);
+      saveTasks();
       renderTasks();
     }
-
+  
     function setFilter(filter) {
       currentFilter = filter;
       renderTasks();
     }
-
+  
     function clearCompleted() {
       tasks = tasks.filter(t => !t.completed);
+      saveTasks();
       renderTasks();
     }
-
+  
     window.onload = () => {
       document.documentElement.setAttribute('data-theme', 'light');
+      loadTasks();
+      renderTasks();
     };
   </script>
+  
 </body>
 </html>
