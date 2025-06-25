@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Todo App</title>
+  <style>
+    :root {
+      --bg-color: #ffffff;
+      --text-color: #000000;
+      --accent-color: #007bff;
+    }
+    [data-theme="dark"] {
+      --bg-color: #1c1c1c;
+      --text-color: #ffffff;
+      --accent-color: #66b2ff;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: sans-serif;
+      margin: 0;
+    }
+
+    header {
+      position: relative;
+      padding: 2em 1em;
+      text-align: center;
+      color: white;
+    }
+
+    #headerBg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    .header-top h1 {
+      font-size: 3em;
+      margin: 0;
+    }
+
+    .header-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 1em;
+      gap: 1em;
+      flex-wrap: wrap;
+    }
+
+    .header-controls button {
+      background-color: rgba(255, 255, 255, 0.2);
+      border: 2px solid #fff;
+      color: #fff;
+      padding: 1em 2em;
+      border-radius: 8px;
+      font-size: 1.1em;
+      cursor: pointer;
+    }
+
+    .theme-icon {
+      width: 42px;
+      height: 42px;
+      cursor: pointer;
+    }
+
+    .input-popup {
+      display: none;
+      position: absolute;
+      top: calc(100% + 1em);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--accent-color);
+      padding: 1em 1.2em;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      width: 320px;
+      backdrop-filter: blur(10px);
+    }
+
+    .responsive-inputs input {
+      width: 100%;
+      padding: 0.6em 0.8em;
+      margin: 0.4em 0;
+      border: 1px solid var(--accent-color);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-color);
+      font-size: 0.95em;
+      box-sizing: border-box;
+    }
+
+    .responsive-inputs button {
+      margin-top: 1em;
+      width: 100%;
+      padding: 0.7em;
+      font-size: 1em;
+      border-radius: 6px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .responsive-inputs button:hover {
+      background-color: #218838;
+    }
+
+    .filter-buttons {
+      margin: 1em 0;
+      text-align: center;
+    }
+
+    .filter-buttons button {
+      background: none;
+      color: var(--text-color);
+      border: none;
+      font-weight: bold;
+      padding: 0.5em 1em;
+    }
+
+    .task {
+      background-color: rgba(0, 0, 0, 0.05);
+      border-radius: 10px;
+      padding: 1em;
+      margin: 0.5em 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .task-content {
+      display: flex;
+      align-items: center;
+      flex: 1;
+    }
+
+    .completed .task-content span {
+      text-decoration: line-through;
+    }
+
+    .completed {
+      opacity: 0.4;
+    }
+
+    input[type="checkbox"] {
+      appearance: none;
+      width: 1em;
+      height: 1em;
+      border: 2px solid var(--accent-color);
+      border-radius: 50%;
+      margin-right: 10px;
+      position: relative;
+    }
+
+    input[type="checkbox"]:checked::before {
+      content: '';
+      position: absolute;
+      width: 0.5em;
+      height: 0.5em;
+      background: var(--accent-color);
+      border-radius: 50%;
+      top: 0.1em;
+      left: 0.1em;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 1em;
+    }
+
+    #taskList {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5em;
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: var(--text-color);
+      font-size: 1.5em;
+      line-height: 1;
+      padding: 0 0.5em;
+      cursor: pointer;
+    }
+
+    @media (max-width: 600px) {
+      .header-top h1 {
+        font-size: 2em;
+      }
+
+      .header-controls {
+        flex-direction: row;
+        justify-content: center;
+        gap: 0.5em;
+      }
+
+      .header-controls button {
+        font-size: 0.9em;
+        padding: 0.7em 1.5em;
+      }
+
+      .theme-icon {
+        width: 36px;
+        height: 36px;
+      }
+
+      .input-popup {
+        width: 90vw;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img id="headerBg" src="okumono-biru3.png" alt="header background"/>
+    <div class="header-top">
+      <h1>Todo</h1>
+    </div>
+    <div class="header-controls">
+      <button onclick="toggleInput()">Create a new Todo</button>
+      <img id="themeIcon" class="theme-icon" src="月.png" onclick="toggleTheme()" alt="theme toggle" />
+    </div>
+    <div id="inputPopup" class="input-popup">
+      <div class="responsive-inputs">
+        <input type="text" id="taskInput" placeholder="練習内容">
+        <input type="text" id="styleInput" placeholder="ダンススタイル（例：ヒップホップ）">
+        <input type="number" id="durationInput" placeholder="練習時間（分）">
+        <input type="number" id="tempoInput" placeholder="目標テンポ（BPM）">
+        <input type="text" id="placeInput" placeholder="練習場所">
+        <button onclick="addTask()">追加</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="filter-buttons">
+      <button onclick="setFilter('all')">All</button>
+      <button onclick="setFilter('active')">Active</button>
+      <button onclick="setFilter('completed')">Completed</button>
+      <button onclick="clearCompleted()">Clear Completed</button>
+    </div>
+    <div id="taskList"></div>
+  </div>
+
+  <script>
+    let tasks = [];
+    let currentFilter = 'all';
+    let isDark = false;
+
+    function toggleInput() {
+      const popup = document.getElementById('inputPopup');
+      popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function toggleTheme() {
+      isDark = !isDark;
+      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      document.getElementById('themeIcon').src = isDark ? '太陽.png' : '月.png';
+      document.getElementById('headerBg').src = isDark ? 'okumono-biru3.png' : 'okumono-biru3.png';
+    }
+
+    function addTask() {
+      const task = {
+        id: Date.now(),
+        title: document.getElementById('taskInput').value,
+        style: document.getElementById('styleInput').value,
+        duration: document.getElementById('durationInput').value,
+        tempo: document.getElementById('tempoInput').value,
+        place: document.getElementById('placeInput').value,
+        completed: false
+      };
+      tasks.push(task);
+      renderTasks();
+      document.getElementById('inputPopup').style.display = 'none';
+    }
+
+    function renderTasks() {
+      const list = document.getElementById('taskList');
+      list.innerHTML = '';
+      const filtered = tasks.filter(task => {
+        if (currentFilter === 'active') return !task.completed;
+        if (currentFilter === 'completed') return task.completed;
+        return true;
+      });
+      filtered.forEach(task => {
+        const div = document.createElement('div');
+        div.className = 'task' + (task.completed ? ' completed' : '');
+        div.innerHTML = `
+          <div class="task-content">
+            <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleComplete(${task.id})">
+            <span>${task.title} / ${task.style} / ${task.duration}分 / ${task.tempo}BPM / ${task.place}</span>
+          </div>
+          <button class="delete-btn" onclick="deleteTask(${task.id})">×</button>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function toggleComplete(id) {
+      const task = tasks.find(t => t.id === id);
+      if (task) {
+        task.completed = !task.completed;
+        renderTasks();
+      }
+    }
+
+    function deleteTask(id) {
+      tasks = tasks.filter(t => t.id !== id);
+      renderTasks();
+    }
+
+    function setFilter(filter) {
+      currentFilter = filter;
+      renderTasks();
+    }
+
+    function clearCompleted() {
+      tasks = tasks.filter(t => !t.completed);
+      renderTasks();
+    }
+
+    window.onload = () => {
+      document.documentElement.setAttribute('data-theme', 'light');
+    };
+  </script>
+</body>
+</html>
